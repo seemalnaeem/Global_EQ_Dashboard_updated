@@ -1,0 +1,112 @@
+# Global Earthquake Dashboard stack.
+# Project (container namespace): global-earthquake
+# Bridge network gives each container a Docker-managed (DHCP-like) IP.
+# Ports publish on 0.0.0.0, so whatever IP the host gets, the browser can reach it.
+name: global-earthquake
+
+services:
+  db:
+    build: ./db
+    image: global-earthquake/db
+    container_name: global-earthquake-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eq}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eq}
+      POSTGRES_DB: ${POSTGRES_DB:-earthquake}
+    ports:
+      - "${DB_PORT:-5438}:5432"          # host 5438 -> postgres 5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks: [eqnet]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-eq} -d ${POSTGRES_DB:-earthquake}"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+
+  geo:
+    build: ./geo
+    image: global-earthquake/geo
+    container_name: global-earthquake-geo
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-eq}:${POSTGRES_PASSWORD:-eq}@db:5432/${POSTGRES_DB:-earthquake}
+      GEO_PORT: "3091"
+      DATA_DIR: /data/raw                 # raw source vectors and rasters
+      COG_DIR: /data/cogs                 # COGs generated for tile serving
+      USGS_FEED: ${USGS_FEED:-all_day}    # USGS summary feed level to poll
+      POLL_INTERVAL: ${POLL_INTERVAL:-60} # seconds between USGS polls
+    ports:
+      - "${GEO_PORT:-3091}:3091"         # backend range 3090-3099
+    volumes:
+      - ./geo:/app                       # live host edits; restart geo to apply (uvicorn, no watch)
+      - ./data:/data/raw:ro              # your data/ folder, read-only
+      - cog_data:/data/cogs              # geo writes COGs here, titiler reads them
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [eqnet]
+    restart: unless-stopped
+
+  titiler:
+    image: ghcr.io/developmentseed/titiler:latest
+    container_name: global-earthquake-titiler
+    command: uvicorn titiler.application.main:app --host 0.0.0.0 --port 8000
+    environment:
+      TITILER_API_CORS_ORIGINS: "*"
+      GDAL_DISABLE_READDIR_ON_OPEN: EMPTY_DIR
+      GDAL_CACHEMAX: "200"
+    ports:
+      - "${TITILER_PORT:-3092}:8000"     # backend range 3090-3099
+    volumes:
+      - cog_data:/data/cogs:ro           # same path geo wrote to, so url=/data/cogs/x.tif resolves
+    networks: [eqnet]
+    restart: unless-stopped
+
+  server:
+    build: ./server
+    image: global-earthquake/server
+    container_name: global-earthquake-server
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-eq}:${POSTGRES_PASSWORD:-eq}@db:5432/${POSTGRES_DB:-earthquake}
+      SERVER_PORT: "3090"
+      GEO_SERVICE_URL: http://geo:3091
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    ports:
+      - "${SERVER_PORT:-3090}:3090"      # backend range 3090-3099
+    volumes:
+      - ./server:/app                    # live host edits; restart server to apply (node, no watch)
+      - /app/node_modules                # keep the image's node_modules (host has none)
+    depends_on:
+      db:
+        condition: service_healthy
+      geo:
+        condition: service_started
+    networks: [eqnet]
+    restart: unless-stopped
+
+  client:
+    build: ./client
+    image: global-earthquake/client
+    container_name: global-earthquake-client
+    environment:
+      CLIENT_PORT: "5177"
+      VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:-}   # Mapbox GL base map token
+    ports:
+      - "${CLIENT_PORT:-5177}:5177"      # frontend range 5177
+    volumes:
+      - ./client:/app                    # live host edits, Vite HMR serves them
+      - /app/node_modules                # keep the image's node_modules (host has none)
+    depends_on:
+      - server
+      - titiler
+    networks: [eqnet]
+    restart: unless-stopped
+
+networks:
+  eqnet:
+    driver: bridge                        # Docker-managed IP allocation
+
+volumes:
+  db_data:
+  cog_data:

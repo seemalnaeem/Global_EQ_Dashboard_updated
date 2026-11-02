@@ -1,0 +1,15 @@
+# Pinned with >= minor bounds. Geospatial libs break across versions
+# (see rules/geospatial.md), so upper-bound every minor version.
+# GDAL Python bindings come from the base image (ghcr.io/osgeo/gdal), not
+# pip, so they stay matched to the image's GDAL/OGR/PROJ build. rasterio is
+# intentionally excluded to avoid a second, conflicting GDAL build; raster
+# work goes through osgeo.gdal directly.
+fastapi>=0.115,<0.116
+uvicorn[standard]>=0.32,<0.33
+psycopg[binary]>=3.2,<3.3
+shapely>=2.0,<2.1
+pyproj>=3.6,<3.7
+geopandas>=1.0,<1.1
+fiona>=1.10,<1.11
+requests>=2.32,<2.33
+pydantic>=2.9,<2.10

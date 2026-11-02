@@ -1,0 +1,1699 @@
+/*
+ * Navy-teal skin ported from the old EQ Portal (styles/style.css). Single dark
+ * theme (no light/dark toggle). Class and id names mirror the old portal so the
+ * layout reads the same: fixed navbar, offcanvas Dashboards menu, a collapsible
+ * control drawer, a left table panel, the map stage, and a right clock/chart/
+ * legend panel.
+ */
+
+:root {
+  --color-bg-dark: #183b4e;
+  --color-border: #436c81;
+  --color-text: #f3f3e0;
+  --color-cream: #f3f3e0;
+
+  --panel-w: 300px;   /* expanded width of the controls drawer */
+  --rail-w: 46px;     /* collapsed width (the slim bar) */
+
+  --font-main: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-weight-bold: 700;
+  --font-weight-bolder: 900;
+  --font-weight-medium: 500;
+  --font-weight-light: lighter;
+
+  /* Aliases for the restored layer/raster panel + style-popover components,
+     mapped onto the navy-teal palette. */
+  --text: var(--color-text);
+  --muted: #7c93a6;
+  --border: var(--color-border);
+  --accent: #2f7dd1;
+  --accent-contrast: #ffffff;
+  --surface: #14343f;
+  --surface-2: #1e4658;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-bg-dark);
+  color: var(--color-text);
+  font-family: var(--font-main);
+  overflow: hidden;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid #3a8ee0;
+  outline-offset: 1px;
+}
+
+/* ========== NAVIGATION BAR ========== */
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 75px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--color-bg-dark);
+  border: solid var(--color-border) 1px;
+  padding: 0 16px;
+  margin: 5px;
+  z-index: 1000;
+}
+
+.logo {
+  height: 60px;
+  margin-left: 4px;
+}
+
+#nav-title {
+  flex: 1 1 auto;
+  text-align: center;
+  color: var(--color-text);
+  font-family: var(--font-main);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 2px;
+  font-size: clamp(1rem, 2.5vw, 2.5rem);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+#G-12 {
+  color: var(--color-bg-dark);
+  background-color: var(--color-cream);
+  padding: 2px 15px;
+  border-radius: 5px;
+  font-weight: var(--font-weight-bold);
+  font-size: clamp(0.9rem, 1.5vw, 1.75rem);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+/* ========== MAIN LAYOUT ========== */
+
+main {
+  margin-top: 80px;
+  width: 100%;
+  height: calc(100vh - 80px);
+  overflow: auto;
+}
+
+#usgs-container {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 80px);
+  background-color: var(--color-bg-dark);
+  position: absolute;
+}
+
+/* ========== COLLAPSIBLE CONTROLS DRAWER ========== */
+
+/* The drawer is a slim fixed rail (just the toggle) plus a content area that
+   expands to the RIGHT of the rail. The rail stays put; the content slides out
+   next to it. Collapsed, the width is the rail only and the content is clipped
+   by overflow: hidden. */
+#control-panel {
+  flex: 0 0 var(--rail-w);
+  width: var(--rail-w);
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  gap: 5px; /* visible gap between the rail and the expanded content panel */
+  overflow: hidden;
+  margin: 5px 0 5px 5px;
+  transition: flex-basis 0.3s ease, width 0.3s ease;
+}
+
+main.controls-open #control-panel {
+  flex-basis: calc(var(--rail-w) + 5px + var(--panel-w));
+  width: calc(var(--rail-w) + 5px + var(--panel-w));
+}
+
+/* Fixed rail: a bordered strip with the stacked toggle buttons at the top. */
+.control-rail {
+  flex: 0 0 var(--rail-w);
+  width: var(--rail-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  background-color: var(--color-bg-dark);
+  border: solid var(--color-border) 1px;
+}
+
+.control-rail button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.control-rail button:hover {
+  background: var(--color-border);
+}
+
+/* Content panel (own bordered box), revealed beside the rail when open. */
+.control-main {
+  flex: 0 0 var(--panel-w);
+  width: var(--panel-w);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--color-bg-dark);
+  border: solid var(--color-border) 1px;
+}
+
+.control-main-head {
+  flex: 0 0 auto;
+  padding: 12px 10px;
+  border-bottom: solid var(--color-border) 1px;
+  white-space: nowrap;
+}
+
+.control-panel-title {
+  color: var(--color-text);
+  font-weight: var(--font-weight-bold);
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.control-panel-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Scroll still works, but the scrollbar is hidden; a bottom chevron hint
+     (.cp-scroll-hint) signals that more layers are below. */
+  scrollbar-width: none;
+}
+
+.control-panel-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Down-chevron hint pinned at the bottom of the drawer; shown only while there
+   is more content to scroll to (toggled from ControlPanel). */
+.cp-scroll-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  pointer-events: none;
+  z-index: 4;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  animation: cpScrollBounce 1.4s ease-in-out infinite;
+}
+
+@keyframes cpScrollBounce {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(3px);
+  }
+}
+
+/* No hint while the drawer is collapsed to the slim rail. */
+main:not(.controls-open) .cp-scroll-hint {
+  display: none;
+}
+
+/* ---------- sections ---------- */
+
+.cp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cp-section + .cp-section {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.cp-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 1.5px;
+}
+
+.cp-section-icon {
+  flex: 0 0 auto;
+}
+
+.cp-subhead {
+  margin: 10px 0 0;
+  font-size: 10.5px;
+  letter-spacing: 1.5px;
+  color: #7c93a6;
+  font-weight: var(--font-weight-bold);
+}
+
+/* ---------- filter ---------- */
+
+#filter-panel-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cp-daterow {
+  display: flex;
+  gap: 10px;
+}
+
+.cp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.cp-field-label {
+  font-size: 11px;
+  color: #9fb4c7;
+}
+
+.cp-chips {
+  display: flex;
+  gap: 6px;
+}
+
+.cp-chip {
+  flex: 1 1 0;
+  padding: 6px 2px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.cp-chip:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.cp-chip.active {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: var(--color-bg-dark);
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-row label {
+  flex: 0 0 78px;
+  font-size: small;
+}
+
+.filter-input {
+  flex: 1 1 0;
+  min-width: 0;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-family: var(--font-main);
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.filter-input::placeholder {
+  color: #7c93a6;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: #3a8ee0;
+}
+
+.filter-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(1);
+  opacity: 0.7;
+}
+
+.filter-input::-webkit-inner-spin-button {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.range-dash {
+  flex: 0 0 auto;
+  color: var(--color-text);
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 9px;
+}
+
+.cp-btn {
+  flex: 1 1 0;
+  padding: 8px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cp-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.cp-btn-primary {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: var(--color-bg-dark);
+}
+
+.cp-btn-primary:hover {
+  background: #e4e1cd;
+}
+
+.cp-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.filter-status {
+  min-height: 1em;
+  margin-top: 6px;
+  text-align: center;
+  font-size: x-small;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+.filter-status.loading {
+  color: #ffd166;
+}
+
+.filter-status.loading::before {
+  content: "\23F3 ";
+}
+
+.filter-status.error {
+  color: #ff8a8a;
+}
+
+/* ---------- layer + raster panels (grouped list, drag-reorder, style popover) ---------- */
+
+.panel-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.3rem 0 0;
+}
+
+.panel-hint.error {
+  color: #ff8a8a;
+}
+
+.layer-list,
+.raster-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.layer-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.35rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.layer-row:hover {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+.layer-row-icon {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.layer-row-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.layer-row svg.muted {
+  color: var(--muted);
+}
+
+.layer-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 6px;
+}
+
+.layer-group-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 0 0 0.3rem;
+  font-weight: 600;
+}
+
+.layer-item {
+  border-radius: 0.35rem;
+}
+
+.layer-item.dragging {
+  opacity: 0.45;
+}
+
+.layer-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.layer-item-row .layer-row {
+  width: auto;
+  flex: 1;
+  min-width: 0;
+}
+
+.layer-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  cursor: grab;
+  flex-shrink: 0;
+  width: 1.1rem;
+}
+
+.layer-drag-handle:active {
+  cursor: grabbing;
+}
+
+.layer-style-trigger {
+  flex-shrink: 0;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.3rem;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.layer-style-trigger:hover {
+  border-color: var(--accent);
+}
+
+.layer-style-swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--swatch-color, var(--accent));
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.layer-style-popover {
+  width: 240px;
+  max-width: calc(100vw - 16px);
+  padding: 0.6rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  z-index: 1200;
+}
+
+.layer-style-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.layer-style-title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.layer-style-count {
+  color: var(--muted);
+  font-size: 0.7rem;
+  margin-top: 0.1rem;
+}
+
+.layer-style-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.layer-style-label {
+  width: 3.6rem;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.layer-style-value {
+  width: 3rem;
+  text-align: right;
+  color: var(--muted);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thin sliders with a cream thumb matching the navbar title color. */
+.layer-style-row input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  min-width: 0;
+  height: 4px;
+  margin: 6px 0;
+  background: var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.layer-style-row input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-text);
+  border: none;
+  cursor: pointer;
+}
+
+.layer-style-row input[type='range']::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-text);
+  border: none;
+  cursor: pointer;
+}
+
+.layer-style-row input[type='range']::-moz-range-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.layer-style-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.color-swatch {
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.color-swatch.active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.color-swatch-custom {
+  background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 0;
+}
+
+.color-swatch-custom input[type='color'] {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+.icon-button-plain {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem;
+  flex-shrink: 0;
+}
+
+.icon-button-plain:hover {
+  color: var(--text);
+}
+
+/* Raster rows match .layer-item/.layer-row, plus a gradient ramp swatch. */
+
+.raster-item {
+  border-radius: 0.35rem;
+}
+
+.raster-style-swatch {
+  display: block;
+  width: 1.1rem;
+  height: 0.7rem;
+  border-radius: 0.2rem;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background-size: cover;
+}
+
+.raster-style-popover {
+  width: 260px;
+}
+
+.raster-style-row {
+  margin-bottom: -0.15rem;
+}
+
+.ramp-swatches {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+}
+
+.ramp-swatch {
+  height: 1.3rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  padding: 0;
+  background-size: cover;
+}
+
+.ramp-swatch.active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.layer-style-popover input[type='number'] {
+  width: 4.5rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 0.3rem;
+  color: var(--text);
+  padding: 0.15rem 0.3rem;
+  margin-left: auto;
+}
+
+/* ========== LEFT PANEL / TABLE ========== */
+
+#left-panel {
+  width: 350px;
+  flex-shrink: 0;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+/* Collapsed by the table toggle in the control rail: hidden, map reclaims it. */
+#left-panel.collapsed {
+  width: 0;
+}
+
+#eq-table-container {
+  width: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 5px 0 5px 5px;
+  font-family: var(--font-main);
+  font-weight: var(--font-weight-light);
+  background-color: var(--color-bg-dark);
+  color: var(--color-text);
+  scrollbar-color: #dad4d4 var(--color-bg-dark);
+  scrollbar-width: thin;
+  padding-left: 9px;
+  padding-bottom: 9px;
+  border: solid var(--color-border) 1px;
+}
+
+#eq-table-container h3 {
+  font-size: 0.95em;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 12px 10px 8px;
+  margin: 0;
+}
+
+#eq-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8em;
+}
+
+#eq-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  background-color: var(--surface-2);
+  color: var(--muted);
+  font-weight: var(--font-weight-bold);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+#eq-table td {
+  padding: 7px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Let the location column wrap (including long tokens) so nothing overflows. */
+#eq-table td:nth-child(2) {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Time cell: date on top, time stacked beneath it, so the column stays narrow. */
+#eq-table td.eq-when {
+  white-space: nowrap;
+}
+
+#eq-table .eq-date {
+  display: block;
+}
+
+#eq-table .eq-time {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* Whole row tinted by magnitude (via the --mag-color set per row), brightening
+   slightly on hover. */
+#eq-table tbody tr {
+  cursor: pointer;
+  background: var(--mag-color, transparent);
+  transition: filter 0.12s ease;
+}
+
+#eq-table tbody tr:hover {
+  filter: brightness(1.15);
+}
+
+#eq-table td:first-child {
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========== MAP STAGE ========== */
+
+#map-stage {
+  position: relative;
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+  margin: 5px;
+  border: solid var(--color-border) 1px;
+  overflow: hidden;
+}
+
+#eq-dashboard {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#globe-canvas {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  cursor: grab;
+}
+
+#map-stage.hollow-active #globe-canvas {
+  display: block;
+}
+
+#country-labels {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+  z-index: 6;
+  overflow: hidden;
+}
+
+#map-stage.hollow-active #country-labels {
+  display: block;
+}
+
+.globe-mode-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 8;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: rgba(18, 44, 60, 0.85);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.globe-mode-btn:hover {
+  background: var(--color-border);
+}
+
+.globe-mode-btn.active {
+  background: #7a1b1b;
+}
+
+#globe-zoom {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 7;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#map-stage.hollow-active:not(.flat-mode) #globe-zoom {
+  display: flex;
+}
+
+#globe-zoom button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: rgba(18, 44, 60, 0.85);
+  color: var(--color-text);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#globe-zoom button:hover {
+  background: var(--color-border);
+}
+
+.country-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  color: #eef3ff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 10px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.12s linear;
+}
+
+.plate-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  color: #ffd23f;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 10px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s linear;
+}
+
+.globe-tooltip {
+  position: absolute;
+  display: none;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: var(--color-cream);
+  border: solid var(--color-border) 1px;
+  color: var(--color-bg-dark);
+  font-family: var(--font-main);
+  font-size: 12px;
+  line-height: 1.45;
+  pointer-events: none;
+  z-index: 40;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.globe-popup {
+  position: absolute;
+  display: none;
+  padding: 10px 30px 10px 14px;
+  border-radius: 6px;
+  background-color: var(--color-cream);
+  border: solid var(--color-border) 1px;
+  color: var(--color-bg-dark);
+  font-family: var(--font-main);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: nowrap;
+  z-index: 41;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.globe-popup-close {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  padding: 0 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-bg-dark);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.globe-popup-close:hover {
+  color: #9b0f00;
+}
+
+/* Raster overlay legends stack, bottom-left of the stage. */
+#raster-legend-stack {
+  position: absolute;
+  bottom: 30px;
+  left: 10px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ===== PGA 2023 vs 2026 swipe comparison overlay ===== */
+.pga-compare {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none; /* main map stays interactive; only the divider grabs */
+}
+
+.pga-compare-left {
+  position: absolute;
+  inset: 0;
+}
+
+.pga-compare-left .mapboxgl-map {
+  width: 100%;
+  height: 100%;
+}
+
+.pga-compare-label {
+  position: absolute;
+  top: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(18, 44, 60, 0.85);
+  color: var(--color-text);
+  font-weight: var(--font-weight-bold);
+  font-size: 12px;
+  z-index: 11;
+}
+
+.pga-compare-label.left {
+  left: 10px;
+}
+
+.pga-compare-label.right {
+  right: 10px;
+}
+
+.pga-compare-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: #ffffff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+  cursor: ew-resize;
+  pointer-events: auto;
+  z-index: 11;
+}
+
+.pga-compare-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-bg-dark);
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: ew-resize;
+}
+
+.raster-legend {
+  background: var(--color-cream);
+  color: var(--color-bg-dark);
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.raster-legend {
+  min-width: 130px;
+}
+
+.raster-legend-title {
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.raster-legend-ramp {
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  background-size: cover;
+  margin-bottom: 3px;
+}
+
+.raster-legend-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.raster-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.raster-legend-swatch {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #000;
+  flex-shrink: 0;
+}
+
+/* ========== RIGHT PANEL ========== */
+
+/* The right panel is a fixed rail on the far right plus a content area (clock/
+   chart/legend) that expands to its LEFT. The rail stays put; the content
+   slides out next to it. row-reverse puts the rail on the right and the content
+   on its left; overflow hides the content when collapsed. */
+#right-panel {
+  flex: 0 0 auto;
+  width: calc(330px + var(--rail-w) + 5px);
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: row-reverse;
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+#right-panel.collapsed {
+  width: calc(var(--rail-w) + 5px);
+}
+
+/* Fixed rail: a bordered strip with the toggle, centered at the top. */
+.right-rail {
+  flex: 0 0 var(--rail-w);
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  margin: 5px 5px 5px 0;
+  background-color: var(--color-bg-dark);
+  border: solid var(--color-border) 1px;
+}
+
+#right-panel-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+#right-panel-toggle:hover {
+  background: var(--color-border);
+}
+
+/* Content area (clock/chart/legend); their percentage heights resolve here. */
+.right-main {
+  flex: 0 0 330px;
+  width: 330px;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+#time {
+  color: var(--color-text);
+  background-color: var(--color-bg-dark);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  margin: 5px 5px 5px 0;
+  border: solid var(--color-border) 1px;
+  width: auto;
+  padding: 6px;
+  height: 10%;
+  font-family: var(--font-main);
+}
+
+#time .clock {
+  font-size: 28px;
+  font-weight: var(--font-weight-bolder);
+}
+
+#time .date {
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+}
+
+#graph {
+  color: var(--color-text);
+  background-color: var(--color-bg-dark);
+  margin: 0px 5px 5px 0;
+  width: auto;
+  padding: 14px;
+  height: 40%;
+  font-size: 15px;
+  line-height: 1.6;
+  font-family: var(--font-main);
+  border: solid var(--color-border) 1px;
+  position: relative;
+}
+
+:fullscreen #graph {
+  width: 100vw;
+  height: 100vh;
+}
+
+:fullscreen #magnitudeChart {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#legend {
+  width: auto;
+  color: var(--color-text);
+  background-color: var(--color-bg-dark);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0px 5px 5px 0;
+  padding: 12px;
+  font-family: var(--font-main);
+  border: solid var(--color-border) 1px;
+  display: flex;
+  flex-direction: column;
+}
+
+.legend-title {
+  font-size: 15px;
+  font-weight: var(--font-weight-bold);
+  padding: 6px 4px 10px;
+}
+
+.legend-sub {
+  font-size: 13px;
+  margin-bottom: 8px;
+  padding-left: 12px;
+}
+
+/* Rows spread to fill the box so the legend does not leave a big empty gap. */
+.items {
+  padding-left: 16px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.legend-label {
+  flex: 1 1 auto;
+}
+
+.legend-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-bold);
+  padding-left: 8px;
+}
+
+.legend-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 10px 2px 2px 16px;
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  border-top: solid var(--color-border) 1px;
+}
+
+.legend-circle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 26px;
+  height: 26px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.circle4 {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgb(116, 175, 116);
+}
+
+.circle3 {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: rgb(44, 193, 204);
+}
+
+.circle2 {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgb(216, 146, 17);
+}
+
+.circle1 {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background-color: rgb(139, 43, 43);
+}
+
+/* ========== ALERTS ========== */
+
+#alert-container {
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  color: white;
+  max-width: 90%;
+}
+
+.quake-alert {
+  background: #8b0000;
+  color: #fff;
+  border: 1px solid #a00000;
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 8px;
+  font-weight: var(--font-weight-bold);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  animation: fadeInDown 0.35s ease;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== MAP OVERLAYS (banners) ========== */
+
+.overlay-banner {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: var(--color-cream);
+  color: var(--color-bg-dark);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.overlay-banner button {
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: 0.3rem;
+  cursor: pointer;
+  padding: 0.1rem 0.5rem;
+  margin-left: 0.5rem;
+}
+
+.overlay-banner.error {
+  background: #ffe0e0;
+  border-color: #9b0f00;
+  color: #9b0f00;
+}
+
+/* ========== MAP POPUPS ========== */
+
+.mapboxgl-popup-content {
+  background-color: var(--color-cream);
+  color: var(--color-bg-dark);
+  font-family: var(--font-main);
+  font-size: 13px;
+  line-height: 1.5;
+  border: solid var(--color-border) 1px;
+  border-radius: 6px;
+  padding: 12px 28px 12px 14px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.mapboxgl-popup-close-button {
+  color: var(--color-bg-dark);
+  font-size: 16px;
+  padding: 0 6px;
+}
+
+.mapboxgl-popup-close-button:hover {
+  background-color: transparent;
+  color: #9b0f00;
+}
+
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+  border-bottom-color: var(--color-cream);
+}
+
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+  border-top-color: var(--color-cream);
+}
+
+.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+  border-right-color: var(--color-cream);
+}
+
+.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+  border-left-color: var(--color-cream);
+}
+
+.usgs-popup-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: #9b0f00;
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.usgs-popup-link:hover {
+  color: var(--color-bg-dark);
+  text-decoration: underline;
+}
+
+/* ========== RESPONSIVE ========== */
+
+#left-panel,
+#right-panel,
+#map-stage {
+  min-width: 0;
+}
+
+@media (max-width: 1400px) {
+  #time .clock {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 1200px) {
+  #usgs-container {
+    position: relative;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: calc(100vh - 80px);
+  }
+  #map-stage {
+    order: -1;
+    width: 100%;
+    height: 55vh;
+    min-height: 320px;
+  }
+  #left-panel,
+  #right-panel {
+    width: 50%;
+    height: auto;
+  }
+  /* Narrow layout: the right panel's content fills next to the rail and the
+     collapse-to-rail state is disabled (it's a desktop affordance). */
+  #right-panel.collapsed {
+    width: 50%;
+  }
+  .right-main {
+    flex: 1 1 auto;
+    width: auto;
+  }
+  #legend,
+  #time,
+  #graph {
+    height: auto;
+  }
+  #graph {
+    min-height: 260px;
+  }
+  #eq-table-container {
+    max-height: 45vh;
+  }
+  /* Narrow layout: the drawer is a full-width block with the content always
+     shown next to the rail (the slim-rail-only state is a desktop affordance). */
+  #control-panel,
+  main.controls-open #control-panel {
+    flex: 1 1 100%;
+    width: 100%;
+    height: auto;
+    align-self: auto;
+    margin: 5px;
+  }
+  .control-main {
+    flex: 1 1 auto;
+  }
+  #control-panel .control-panel-body {
+    max-height: 45vh;
+  }
+}
+
+@media (max-width: 768px) {
+  main {
+    margin-top: 70px;
+    height: calc(100vh - 70px);
+  }
+  .navbar {
+    height: auto;
+    min-height: 60px;
+  }
+  .logo {
+    height: 40px;
+  }
+  #nav-title {
+    letter-spacing: 1px;
+  }
+  #map-stage {
+    height: 45vh;
+    min-height: 260px;
+    margin: 5px 0;
+  }
+  #left-panel,
+  #right-panel {
+    width: 100%;
+    margin: 0 5px;
+  }
+  #right-panel.collapsed {
+    width: 100%;
+  }
+  .filter-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .filter-row label {
+    flex: 1 0 100%;
+  }
+  #eq-table-container {
+    margin: 5px 0;
+    max-height: 40vh;
+  }
+  #eq-table {
+    font-size: 0.75em;
+  }
+  #eq-table td {
+    padding: 5px;
+  }
+  #time {
+    margin: 5px 0;
+  }
+  #time .clock {
+    font-size: 22px;
+  }
+  #graph {
+    margin: 5px 0;
+    min-height: 220px;
+  }
+  #legend {
+    margin: 5px 0;
+  }
+  #alert-container {
+    top: 80px;
+  }
+}
+
+@media (max-height: 600px) and (max-width: 1200px) {
+  #map-stage {
+    height: 60vh;
+  }
+}

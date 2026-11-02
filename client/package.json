@@ -1,0 +1,33 @@
+{
+  "name": "global-earthquake-client",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5177",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 5177",
+    "lint": "eslint . --ext js,jsx --max-warnings 0",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.4",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "date-fns": "^3.6.0",
+    "mapbox-gl": "^3.28.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0",
+    "react-map-gl": "^8.1.2",
+    "three": "^0.128.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "jsdom": "^25.0.1",
+    "vite": "^5.4.2",
+    "vitest": "^2.0.5"
+  }
+}

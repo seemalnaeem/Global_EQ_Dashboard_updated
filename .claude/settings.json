@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(npm install)",
+      "Bash(npx vitest *)",
+      "Bash(node *)",
+      "Bash(python -m pytest *)",
+      "Bash(uvicorn *)",
+      "Bash(pip install *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(docker compose *)",
+      "Bash(psql *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(git commit *)",
+      "Bash(docker compose down *)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/secrets/**)",
+      "Bash(git push --force*)",
+      "Bash(rm -rf *)",
+      "Bash(psql * -c \"DROP*)"
+    ]
+  },
+  "env": {
+    "TZ": "UTC"
+  }
+}
